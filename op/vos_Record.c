@@ -689,7 +689,7 @@ int record_read_filtered(struct Record **R, struct File *F, struct Field *fld)
 			/* reject this record */
 			if (s == 0) {
 				reject = 1;
-				str_prune(str);
+				break;
 			}
 		}
 
@@ -710,7 +710,7 @@ int record_read_filtered(struct Record **R, struct File *F, struct Field *fld)
 	}
 	/* go to next row */
 	if (FCURC(F) != CH_NEWLINE) {
-		s = file_fetch_until(F, str, CH_NEWLINE);
+		s = file_skip_until(F, CH_NEWLINE);
 	}
 	F->idx++;
 	s = 0;

@@ -107,7 +107,7 @@ int file_write(struct File *F)
 		return E_FILE_WRITE;
 	}
 
-	F->buf = memset(F->buf, FILE_DEF_SET, F->size);
+	F->buf = memset(F->buf, FILE_DEF_SET, F->idx);
 	F->pos += F->idx;
 	F->idx = 0;
 

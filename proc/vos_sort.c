@@ -191,7 +191,7 @@ static void *sort_process(void *parm)
 			goto err;
 	}
 
-	/* phase 1: create & file rows */
+	/* phase 1: create & fill rows */
 	while (FCURP(F) < psort->pos_end) {
 		s = record_read(&R, F, psort->sort->in->fields);
 		if (! R)

@@ -94,7 +94,31 @@ void bucket_destroy(struct Bucket *B, const int n)
 	}
 }
 
-static int record_write_once(struct Record *R, struct File *F, struct Field *frmt)
+static int bucket_file_write(struct File *F)
+{
+	int		s	= 0;
+	unsigned long	len	= 0;
+	unsigned long	fidx	= F->idx;
+
+	/* set F->idx to the last new line */
+	while (F->idx > 0 && FCURC(F) != CH_NEWLINE)
+		F->idx--;
+
+	len	= fidx - F->idx;
+	fidx	= F->idx;
+
+	s = file_write(F);
+	if (s)
+		return s;
+
+	F->buf = memmove(F->buf, &F->buf[fidx], len);
+	F->idx = len;
+
+	return 0;
+}
+
+static int record_write_once(struct Record *R, struct File *F,
+				struct Field *frmt, int *start_p)
 {
 	int	s;
 	long	len	= 0;
@@ -102,20 +126,19 @@ static int record_write_once(struct Record *R, struct File *F, struct Field *frm
 
 	/* set start position */
 	if (frmt->start_p) {
-		len = F->pos + frmt->start_p;
-		if (len < F->idx) {
-			while (F->idx > len) {
+		if ((*start_p) > frmt->start_p) {
+			while ((*start_p) > frmt->start_p) {
 				FCURC(F) = ' ';
 				F->idx--;
+				(*start_p)--;
 			}
-		} else {
-			len2 = F->idx;
-			while (len2 < len) {
+		} else if ((*start_p) < frmt->start_p) {
+			while ((*start_p) < frmt->start_p) {
+				(*start_p)++;
 				FCURC(F) = ' ';
 				F->idx++;
-				len2++;
 				if (F->idx >= F->size) {
-					s = file_write(F);
+					s = bucket_file_write(F);
 					if (s)
 						return s;
 				}
@@ -125,9 +148,10 @@ static int record_write_once(struct Record *R, struct File *F, struct Field *frm
 
 	/* write left quote */
 	if (frmt->left_q) {
+		(*start_p)++;
 		FCURC(F) = frmt->left_q;
 		if (++F->idx >= F->size) {
-			s = file_write(F);
+			s = bucket_file_write(F);
 			if (s)
 				return s;
 		}
@@ -146,13 +170,14 @@ static int record_write_once(struct Record *R, struct File *F, struct Field *frm
 			len = len2;
 	}
 	if ((F->idx + len) >= F->size) {
-		s = file_write(F);
+		s = bucket_file_write(F);
 		if (s)
 			return s;
 	}
 	if (len > 0) {
 		memcpy(&FCURC(F), R->v->buf, len);
 		F->idx += len;
+		(*start_p) += len;
 		str_prune(R->v);
 	}
 
@@ -160,8 +185,9 @@ static int record_write_once(struct Record *R, struct File *F, struct Field *frm
 	if (frmt->right_q) {
 		FCURC(F) = frmt->right_q;
 		F->idx++;
+		(*start_p)++;
 		if (F->idx >= F->size) {
-			s = file_write(F);
+			s = bucket_file_write(F);
 			if (s)
 				return s;
 		}
@@ -173,8 +199,9 @@ static int record_write_once(struct Record *R, struct File *F, struct Field *frm
 			FCURC(F) = ' ';
 			F->idx++;
 			len++;
+			(*start_p)++;
 			if (F->idx >= F->size) {
-				s = file_write(F);
+				s = bucket_file_write(F);
 				if (s)
 					return s;
 			}
@@ -184,8 +211,9 @@ static int record_write_once(struct Record *R, struct File *F, struct Field *frm
 	if (frmt->sep) {
 		FCURC(F) = frmt->sep;
 		F->idx++;
+		(*start_p)++;
 		if (F->idx >= F->size) {
-			s = file_write(F);
+			s = bucket_file_write(F);
 			if (s)
 				return s;
 		}
@@ -200,7 +228,7 @@ int bucket_write(struct Bucket *B, const int n, struct File *F,
 	int		s	= 0;
 	int		i	= 0;
 	int		empty	= 1;
-	unsigned long	nrow	= 0;
+	int		start_p	= 0;
 	struct Field	*pfld	= 0;
 	struct String	snon	= {0, 0, "\0"};
 	struct Record	non	= {0, 0, &snon, 0, 0, 0, 0};
@@ -222,31 +250,33 @@ int bucket_write(struct Bucket *B, const int n, struct File *F,
 		pfld = flds;
 		for (i = 1; i < n; i++) {
 			if (! B[i].stat) {
-				s = record_write_once(B[i].p, F, pfld);
+				s = record_write_once(B[i].p, F, pfld,
+							&start_p);
 				if (s)
 					goto err;
 
 				B[i].p = B[i].p->row_next;
-				if (B[i].p == B[i].cnt->row_last || (! B[i].p)) {
+				if (B[i].p == B[i].cnt->row_last
+				|| (! B[i].p)) {
 					empty++;
-					B[i].stat = 1;
-					B[i].p = B[i].cnt;
-					B[i].cnt->row_last = 0;
+					B[i].stat		= 1;
+					B[i].p			= B[i].cnt;
+					B[i].cnt->row_last	= 0;
 				}
 			} else {
-				s = record_write_once(&non, F, pfld);
+				s = record_write_once(&non, F, pfld,
+							&start_p);
 			}
 			pfld = pfld->next;
 		}
 		if (F->idx >= F->size) {
-			s = file_write(F);
+			s = bucket_file_write(F);
 			if (s)
 				goto err;
 		}
 		FCURC(F) = CH_NEWLINE;
 		F->idx++;
-		F->pos = F->idx;
-		nrow++;
+		start_p	= 0;
 	}
 	file_write(F);
 err:
@@ -303,7 +333,6 @@ int bucket_read_filtered(struct Bucket *B, struct File *F, struct Field *_fld)
 						if (s)
 							goto err;
 					}
-
 				}
 			}
 		} else if (fld->left_q) {
@@ -334,16 +363,16 @@ int bucket_read_filtered(struct Bucket *B, struct File *F, struct Field *_fld)
 				}
 			}
 		} else if (fld->right_q) {
-			if (fld->flag && ! reject)
+			if (fld->flag && ! reject) {
 				s = file_fetch_until(F, str, fld->right_q);
-			else
+				start_p += str->idx + 1;
+			} else {
 				s = file_skip_until(F, fld->right_q);
+			}
 			if (s)
 				goto err;
 
 			F->idx++;
-			start_p += str->idx + 1;
-
 			if (F->idx >= F->size) {
 				s = file_read(F);
 				if (s)
@@ -370,16 +399,15 @@ int bucket_read_filtered(struct Bucket *B, struct File *F, struct Field *_fld)
 				}
 			}
 		} else if (fld->sep) {
-			if (fld->flag && !reject)
+			if (fld->flag && !reject) {
 				s = file_fetch_until(F, str, fld->sep);
-			else
+				start_p += str->idx + 1;
+			} else
 				s = file_skip_until(F, fld->sep);
 			if (s)
 				goto err;
 
 			F->idx++;
-			start_p += str->idx + 1;
-
 			if (F->idx >= F->size) {
 				s = file_read(F);
 				if (s)
@@ -400,6 +428,7 @@ int bucket_read_filtered(struct Bucket *B, struct File *F, struct Field *_fld)
 			/* reject this record */
 			if (s == 0) {
 				reject = 1;
+				break;
 				/* prune later */
 			}
 		}
@@ -407,7 +436,7 @@ int bucket_read_filtered(struct Bucket *B, struct File *F, struct Field *_fld)
 		fld = fld->next;
 	}
 	if (FCURC(F) != CH_NEWLINE) {
-		s = file_fetch_until(F, str, CH_NEWLINE);
+		s = file_skip_until(F, CH_NEWLINE);
 	}
 	F->idx++;
 
@@ -424,7 +453,8 @@ int bucket_read_filtered(struct Bucket *B, struct File *F, struct Field *_fld)
 		s = 0;
 		/* move `p' to the next row in the bucket */
 		while (fld) {
-			B[fld->idx].p = B[fld->idx].p->row_next;
+			if (B[fld->idx].p)
+				B[fld->idx].p = B[fld->idx].p->row_next;
 			fld = fld->next;
 		}
 	}

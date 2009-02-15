@@ -205,7 +205,6 @@ int vos_process_create(struct Stmt *create)
 
 	if (_vos.debug & DBG_CREATE) {
 		printf("parent: writing bucket\n");
-		bucket_print(buckets, n_bucket);
 	}
 	s = bucket_write(buckets, n_bucket, F, create->out->fields);
 	if (s)
@@ -217,7 +216,9 @@ int vos_process_create(struct Stmt *create)
 			/* restart threads */
 			if (cproc[i].status == CPROC_BUCKETS_FULL)
 				cproc[i].status = CPROC_START;
+		}
 
+		for (i = 0; i < n_in; i++) {
 			/* wait until child fill the buckets */
 			while (cproc[i].status == CPROC_START)
 				sleep(THREAD_TIME_WAIT);
@@ -238,7 +239,6 @@ int vos_process_create(struct Stmt *create)
 
 		if (_vos.debug & DBG_CREATE) {
 			printf("parent: writing bucket\n");
-			bucket_print(buckets, n_bucket);
 		}
 		s = bucket_write(buckets, n_bucket, F, create->out->fields);
 		if (s)
