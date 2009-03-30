@@ -48,15 +48,17 @@ static int vos_init(int argc, char **argv)
 				return E_VOS_PARAM;
 
 			s = strcmp(argv[i], "-d");
-			if (s == 0)
+			if (s == 0) {
 				s = ARG_DEBUG_VALUE;
-			else
+				i++;
+			} else
 				s = ARG_VOS_SCRIPT;
 			break;
 
 		case ARG_DEBUG_VALUE:
 			_vos.debug = strtol(argv[i], 0, 0);
 			s = ARG_VOS_SCRIPT;
+			i++;
 			break;
 
 		case ARG_VOS_SCRIPT:
@@ -64,11 +66,16 @@ static int vos_init(int argc, char **argv)
 			s = ARG_DONE;
 			break;
 		}
-		i++;
 	}
 	if (s != ARG_DONE)
 		return E_VOS_PARAM;
 
+	s = ll_add(&_vos.proc_tmp_dir, 1, VOS_DEF_PROC_TMP_DIR);
+	if (s)
+		return s;
+
+	pthread_mutex_init(&_vos.proc_tmp_dir_lock, 0);
+	_vos.p_proc_tmp_dir	= _vos.proc_tmp_dir;
 	_vos.file_buf_size	= VOS_DEF_FILE_BUF_SIZE;
 	_vos.proc_cmp_case	= VOS_DEF_PROC_CMP_CASE;
 	_vos.proc_max		= VOS_DEF_PROC_MAX;
@@ -79,6 +86,19 @@ static int vos_init(int argc, char **argv)
 	return 0;
 }
 
+static void vos_print()
+{
+	printf(" vos debug                : %d\n", _vos.debug);
+	printf(" vos file buffer size     : %ld\n", _vos.file_buf_size);
+	printf(" vos process compare case : %s\n", _vos.proc_cmp_case ?
+							"not sensitive" :
+							"sensitive");
+	printf(" vos process maximum      : %d\n", _vos.proc_max);
+	printf(" vos process maximum row  : %ld\n", _vos.proc_max_row);
+	printf(" vos process temporary dir:\n");
+	ll_print(_vos.proc_tmp_dir);
+}
+
 static int vos_process(struct Stmt *stmt)
 {
 	int s;
@@ -87,6 +107,9 @@ static int vos_process(struct Stmt *stmt)
 		switch (stmt->type) {
 		case STMT_SET:
 			vos_process_set(stmt->set);
+
+			if (_vos.debug & DBG_PARSER)
+				vos_print();
 			break;
 		case STMT_LOAD:
 			s = vos_process_load(stmt);
@@ -175,6 +198,10 @@ err:
 	if (_vos.e_sparm1)
 		free(_vos.e_sparm1);
 out:
+	if (_vos.proc_tmp_dir)
+		ll_destroy(&_vos.proc_tmp_dir);
+
+	pthread_mutex_destroy(&_vos.proc_tmp_dir_lock);
 	stmt_destroy(&stmt);
 
 	return s;

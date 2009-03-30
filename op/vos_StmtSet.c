@@ -5,7 +5,8 @@ const char *_stmt_set[N_SET] = {
 	"PROCESS_COMPARE_CASE_SENSITIVE\0",
 	"PROCESS_COMPARE_CASE_NOTSENSITIVE\0",
 	"PROCESS_MAX\0",
-	"PROCESS_MAX_ROW\0"
+	"PROCESS_MAX_ROW\0",
+	"PROCESS_TEMPORARY_DIRECTORY\0"
 };
 
 int stmtset_create(struct Stmt **stmt)

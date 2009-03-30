@@ -120,19 +120,44 @@ static struct Record * sort(struct Record *rows, unsigned long n_row)
 
 static int sort_write(struct ProcSort *psort, struct Record *rows)
 {
-	int		s	= 0;
-	char		*tmp	= 0;
-	struct File	*Fout	= 0;
+	int		s		= 0;
+	char		*rndm_name	= 0;
+	struct String	*tmp		= 0;
+	struct File	*Fout		= 0;
+
+	str_create(&tmp);
 
 	do {
-		s = str_raw_randomize(VOS_SORT_TMP_FORMAT, &tmp);
-		if (s)
-			return s;
+		/* get a path to temporary directory */
+		if (_vos.proc_max > 1) {
+			do {
+				s = pthread_mutex_trylock(&_vos.proc_tmp_dir_lock);
+			} while (s);
+		}
 
-		s = file_open(&Fout, tmp, FOPEN_WO);
+		str_append(tmp, _vos.p_proc_tmp_dir->str);
+
+		_vos.p_proc_tmp_dir = _vos.p_proc_tmp_dir->next;
+		if (! _vos.p_proc_tmp_dir)
+			_vos.p_proc_tmp_dir = _vos.proc_tmp_dir;
+
+		if (_vos.proc_max > 1) {
+			pthread_mutex_unlock(&_vos.proc_tmp_dir_lock);
+		}
+
+		/* get random file name */
+		s = str_raw_randomize(VOS_SORT_TMP_FORMAT, &rndm_name);
+		if (s)
+			goto err;
+
+		str_append(tmp, rndm_name);
+
+		s = file_open(&Fout, tmp->buf, FOPEN_WO);
 		if (s == 0)
-			ll_add(&psort->lsout, psort->tid, tmp);
-		free(tmp);
+			ll_add(&psort->lsout, psort->tid, tmp->buf);
+
+		str_prune(tmp);
+		free(rndm_name);
 	} while (s == E_FILE_EXIST);
 
 	s = record_write(rows, Fout, psort->sort->out->fields);
@@ -140,6 +165,8 @@ static int sort_write(struct ProcSort *psort, struct Record *rows)
 	file_write(Fout);
 	file_close(&Fout);
 
+err:
+	str_destroy(&tmp);
 	return s;
 }
 

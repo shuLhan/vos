@@ -1,6 +1,9 @@
 #ifndef _VOS_T_H
 #define	_VOS_T_H
 
+#include <pthread.h>
+#include "vos_TLL.h"
+
 /**
  * @desc:
  *	- DBG_SCRIPT	: don't process the script
@@ -31,12 +34,15 @@ struct Vos {
 	int		e_nparm0;	/* first error parameter for number */
 	int		e_nparm1;	/* second error parameter for number */
 	int		proc_cmp_case;	/* use compare case sensitive ? */
+	int		proc_max;	/* maximum process for sort */
 	unsigned long	file_buf_size;	/* size of buffer for file */
-	unsigned long	proc_max;	/* maximum process for sort */
 	unsigned long	proc_max_row;	/* maximum row for each process */
+	pthread_mutex_t	proc_tmp_dir_lock;
 	char		*script;	/* vos script */
 	char		*e_sparm0;	/* first error parameter (string) */
 	char		*e_sparm1;	/* second error parameter (string) */
+	struct LL	*proc_tmp_dir;	/* process temporary directories */
+	struct LL	*p_proc_tmp_dir;
 };
 
 #endif

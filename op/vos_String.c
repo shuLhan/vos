@@ -64,7 +64,6 @@ int str_append_c(struct String *str, const int c)
  */
 int str_append(struct String *S, const char *str)
 {
-	int i;
 	int len;
 
 	if (! S)
@@ -79,10 +78,11 @@ int str_append(struct String *S, const char *str)
 		if (! S->buf)
 			return E_MEM;
 	}
-	for (i = 0; i < len; i++)
-		S->buf[S->idx++] = str[i];
 
-	S->buf[S->idx] = '\0';
+	memcpy(&S->buf[S->idx], str, len);
+
+	S->idx		+= len;
+	S->buf[S->idx]	= '\0';
 
 	return 0;
 }

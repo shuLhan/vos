@@ -133,7 +133,9 @@ static int stmt_get_output_from(struct StmtMeta **smeta, struct Stmt *stmt,
 
 static int parsing_SET(struct Stmt **stmt, struct LL **ptok)
 {
-	int s = PSET_START;
+	int		l	= 0;
+	int		s	= PSET_START;
+	struct String	*tmp	= 0;
 
 	while ((*ptok) && s != PSET_DONE) {
 		switch (s) {
@@ -159,9 +161,39 @@ static int parsing_SET(struct Stmt **stmt, struct LL **ptok)
 				s = PSET_VALUE;
 			break;
 		case PSET_VALUE:
-			(*stmt)->set->value	= (*ptok)->str;
-			(*ptok)->str		= 0;
-			s			= PSET_END;
+			if ((*stmt)->set->var_idx != SET_PROC_TMP_DIR) {
+				(*stmt)->set->value	= (*ptok)->str;
+				(*ptok)->str		= 0;
+				s			= PSET_END;
+				break;
+			}
+
+			/* (*stmt)->set->var_idx == SET_PROC_TMP_DIR */
+			s = str_create(&tmp);
+			if (s)
+				return s;
+
+			while ((*ptok) && strcmp((*ptok)->str, ";") != 0) {
+				if (strcmp((*ptok)->str, ":") == 0) {
+					str_append_c(tmp, ':');
+				} else {
+					str_append_c(tmp, '"');
+					str_append(tmp, (*ptok)->str);
+
+					/* does it end with '/' ? */
+					l = strlen((*ptok)->str) - 1;
+					if (l >= 0 && (*ptok)->str[l] != '/')
+						str_append_c(tmp, '/');
+
+					str_append_c(tmp, '"');
+				}
+				(*ptok) = (*ptok)->next;
+			}
+
+			(*stmt)->set->value	= tmp->buf;
+			tmp->buf		= 0;
+			s			= PSET_DONE;
+			str_destroy(&tmp);
 			break;
 		case PSET_END:
 			if ((*ptok)->str[0] != ';') {
@@ -1139,7 +1171,7 @@ int vos_parsing(struct Stmt **stmt, const char *script)
 		switch (FCURC(F)) {
 		case CH_NEWLINE:
 			line_no++;
-		case  ' ': case '\b': case '\f': case '\r': case '\t':
+		case ' ': case '\b': case '\f': case '\r': case '\t':
 		case '\v':
 			break;
 
@@ -1268,7 +1300,7 @@ int vos_parsing(struct Stmt **stmt, const char *script)
 		F->idx++;
 	}
 
-	if (_vos.debug & DBG_PARSER) {
+	if (_vos.debug & DBG_SCRIPT) {
 		ll_print(ls_tok);
 	}
 
