@@ -32,6 +32,8 @@ int file_open(struct File **F, const char *f, int flag)
 
 	if ((*F)->d < 0) {
 		str_raw_copy(f, &_vos.e_sparm0);
+		free((*F));
+		(*F) = 0;
 
 		switch (errno) {
 		case ENOENT:
@@ -248,4 +250,130 @@ int file_raw_is_exist(const char *file)
 	}
 
 	return s;
+}
+
+/**
+ * @desc: copy file 'from' to 'to'.
+ */
+int file_raw_copy(const char *from, const char *to)
+{
+	int		s;
+	int		fdin;
+	int		fdout;
+	long int	nread	= 0;
+	long int	nwrite	= 0;
+	long int	ntot	= 0;
+	char		*buf;
+
+	fdin = open(from, O_RDONLY);
+	if (fdin < 0)
+		return E_FILE_OPEN;
+
+	fdout = open(to, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+	if (fdout < 0) {
+		close(fdin);
+		return E_FILE_OPEN;
+	}
+
+	buf = (char *) calloc(_vos.file_buf_size, sizeof(char));
+	if (! buf) {
+		close(fdin);
+		close(fdout);
+		return E_MEM;
+	}
+
+	nread = read(fdin, buf, _vos.file_buf_size);
+	if (nread < 0) {
+		s = E_FILE_READ;
+		goto err;
+	}
+	while (nread > 0) {
+		do {
+			nwrite = write(fdout, &buf[ntot], nread);
+			if (nwrite < 0) {
+				s = E_FILE_WRITE;
+				goto err;
+			}
+			ntot	+= nwrite;
+			nread	-= nwrite;
+		} while (nread > 0);
+
+		nwrite	= 0;
+		ntot	= 0;
+
+		nread = read(fdin, buf, _vos.file_buf_size);
+		if (nread < 0) {
+			s = E_FILE_READ;
+			goto err;
+		}
+	}
+
+	s = 0;
+err:
+	close(fdout);
+	close(fdin);
+	free(buf);
+	return s;
+}
+
+/**
+ * @desc: get directory name from path.
+ *	path		=> dirname
+ *	"/usr/lib"	=> "/usr"
+ *	"/usr/"		=> "/"
+ *	"usr"		=> "."
+ *	"/"		=> "/"
+ *	"."		=> "."
+ *	".."		=> ".."
+ *
+ * @return:
+ *	< 0	: success.
+ *	< E_MEM	: fail.
+ */
+int file_raw_get_dirname(const char *path, char **dirname)
+{
+	int	l	= 0;
+	char	*d	= 0;
+
+	if (! path
+	|| (path && strcmp(path, "..") == 0)) {
+		d = (char *) calloc(2, sizeof(char));
+		if (d)
+			d[0] = '.';
+		goto out;
+	}
+
+	l = strlen(path) - 1;
+
+	/* path : '/' */
+	if (l == 0 && path[0] == '/') {
+		d = (char *) calloc(2, sizeof(char));
+		if (d)
+			d[0] = '/';
+		goto out;
+	}
+
+	/* path : '/path///' */
+	while (l >= 0 && path[l] == '/')
+		l--;
+
+	while (l >= 0 && path[l] != '/')
+		l--;
+
+	if (l < 0) {
+		d = (char *) calloc(2, sizeof(char));
+		if (d)
+			d[0] = '.';
+	} else {
+		if (l == 0)
+			l++;
+		d = (char *) calloc(l + 1, sizeof(char));
+		if (d)
+			memcpy(d, path, l);
+	}
+
+out:
+	(*dirname) = d;
+
+	return d ? 0 : E_MEM;
 }

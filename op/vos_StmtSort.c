@@ -8,7 +8,6 @@ int stmtsort_create(struct Stmt **sort)
 
 	(*sort)->out = (struct StmtMeta *) calloc(1, sizeof(struct StmtMeta));
 	if (! (*sort)->out) {
-		free((*sort)->in);
 		free((*sort));
 		(*sort) = 0;
 		return E_MEM;
@@ -17,9 +16,9 @@ int stmtsort_create(struct Stmt **sort)
 	return 0;
 }
 
-int stmtsort_init_output(struct Stmt *sort)
+int stmtsort_init(struct Stmt *sort)
 {
-	int		s		= E_MEM;
+	int		s		= 0;
 	struct Field	*fld_in		= 0;
 	struct Field	*fld_out	= 0;
 
@@ -30,18 +29,7 @@ int stmtsort_init_output(struct Stmt *sort)
 			return E_MEM;
 	}
 
-	if (! sort->out->filename) {
-		do {
-			s = str_raw_randomize(VOS_SORT_OUT_FORMAT,
-							&sort->out->filename);
-			if (s)
-				return s;
-
-			s = file_raw_is_exist(sort->out->filename);
-			if (s)
-				free(sort->out->filename);
-		} while (s);
-	} else {
+	if (sort->out->filename) {
 		/* check if file output is exist */
 		s = file_raw_is_exist(sort->out->filename);
 		if (s) {
@@ -79,6 +67,49 @@ int stmtsort_init_output(struct Stmt *sort)
 	return 0;
 }
 
+/**
+ * @stmtsort_init_output: get temporary file name for sort output.
+ *
+ * @return:
+ *	< 0	: success.
+ *	< !0	: fail.
+ */
+int stmtsort_init_output(struct Stmt *sort)
+{
+	int		s;
+	char		*rndm_name	= 0;
+	struct String	*tmp		= 0;
+
+	/* filename already declared by INTO statement */
+	if (sort->out->filename)
+		return 0;
+
+	str_create(&tmp);
+
+	do {
+		str_append(tmp, get_tmp_dir(0));
+
+		s = str_raw_randomize(VOS_SORT_OUT_FORMAT, &rndm_name);
+		if (s)
+			goto err;
+
+		str_append(tmp, rndm_name);
+
+		s = file_raw_is_exist(tmp->buf);
+		if (s)
+			str_prune(tmp);
+
+		free(rndm_name);
+	} while (s);
+
+	sort->out->flag		|= SORT_TMP;
+	sort->out->filename	= tmp->buf;
+	tmp->buf		= 0;
+err:
+	str_destroy(&tmp);
+	return s;
+}
+
 void stmtsort_print(struct Stmt *sort)
 {
 	if (! sort)
@@ -99,8 +130,11 @@ void stmtsort_destroy(struct Stmt **sort)
 
 	stmtmeta_soft_destroy(&(*sort)->in);
 	if ((*sort)->out) {
-		if ((*sort)->out->filename)
+		if ((*sort)->out->filename) {
+			if ((*sort)->out->flag & SORT_TMP)
+				unlink((*sort)->out->filename);
 			free((*sort)->out->filename);
+		}
 		if ((*sort)->out->alias)
 			free((*sort)->out->alias);
 		field_soft_destroy(&(*sort)->out->fields);

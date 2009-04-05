@@ -13,6 +13,7 @@ extern const char *_stmt_type[N_STMT_TYPE];
 
 void stmt_add(struct Stmt **stmt, struct Stmt *new_stmt);
 struct Stmt * stmt_find_by_name(struct Stmt *stmt, const char *name);
+int stmt_update_meta(struct Stmt *stmt, struct StmtMeta *smeta);
 void stmt_print(struct Stmt *stmt);
 void stmt_destroy(struct Stmt **stmt);
 

@@ -1,7 +1,6 @@
 #ifndef _VOS_STMTJOIN_H
 #define	_VOS_STMTJOIN_H	1
 
-#include "type/vos_TStmtJoin.h"
 #include "type/vos_TStmt.h"
 #include "op/vos_StmtMeta.h"
 #include "op/vos_File.h"

@@ -26,62 +26,60 @@ void stmt_add(struct Stmt **stmt, struct Stmt *new_stmt)
 	(*stmt)->last = new_stmt;
 }
 
-struct Stmt * stmt_find_by_name(struct Stmt *stmt, const char *name)
+struct Stmt * stmt_find_by_name(struct Stmt *p, const char *name)
 {
-	int		s	= 0;
-	struct Stmt	*p	= stmt->last;
-
 	while (p) {
 		switch (p->type) {
 		case STMT_LOAD:
-			s = strcasecmp(p->in->filename, name);
-			if (s == 0)
-				return p;
-
-			if (p->in->alias) {
-				s = strcasecmp(p->in->alias, name);
-				if (s == 0)
-					return p;
-			}
-			break;
-
 		case STMT_SORT:
-			s = strcasecmp(p->in->filename, name);
-			if (s == 0)
+			if (strcasecmp(p->in->filename, name) == 0)
 				return p;
 
-			if (p->in->alias) {
-				s = strcasecmp(p->in->alias, name);
-				if (s == 0)
-					return p;
-			}
+			if (strcasecmp(p->in->alias, name) == 0)
+				return p;
 			break;
 
 		case STMT_CREATE:
-			s = strcasecmp(p->out->filename, name);
-			if (s == 0)
-				return p;
-
-			if (p->out->alias) {
-				s = strcasecmp(p->out->alias, name);
-				if (s == 0)
-					return p;
-			}
-			break;
-
 		case STMT_JOIN:
-			s = strcasecmp(p->out->filename, name);
-			if (s == 0)
+			if (strcasecmp(p->out->filename, name) == 0)
 				return p;
 
-			if (p->out->alias) {
-				s = strcasecmp(p->out->alias, name);
-				if (s == 0)
-					return p;
-			}
+			if (strcasecmp(p->out->alias, name) == 0)
+				return p;
 			break;
 		}
 		p = p->prev;
+	}
+
+	return 0;
+}
+
+/**
+ * @desc: update the filename in 'smeta' to point to sort output.
+ *
+ *	some statement use sort output as input, since sort output some time
+ *	is not defined in script (without INTO clause) then we need to update
+ *	the filename before processing.
+ *
+ * @return:
+ *	< 0			: success.
+ *	< E_FILE_NOT_EXIST	: fail, could not find file alias in 'stmt'.
+ */
+int stmt_update_meta(struct Stmt *stmt, struct StmtMeta *smeta)
+{
+	struct Stmt *p;
+
+	if (smeta->filename)
+		return 0;
+
+	p = stmt_find_by_name(stmt, smeta->alias);
+	if (! p) {
+		str_raw_copy(smeta->alias, &_vos.e_sparm0);
+		return E_FILE_NOT_EXIST;
+	}
+
+	if (p->type == STMT_SORT) {
+		str_raw_copy(p->out->filename, &smeta->filename);
 	}
 
 	return 0;

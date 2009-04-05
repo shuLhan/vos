@@ -14,7 +14,7 @@ static int join_do_sort(struct Stmt *join)
 		join->in->next	= 0;
 		sort->in	= join->in;
 
-		s = stmtsort_init_output(sort);
+		s = stmtsort_init(sort);
 		if (s)
 			goto err;
 
@@ -38,7 +38,7 @@ static int join_do_sort(struct Stmt *join)
 
 		sort->in = join->in->next;
 
-		s = stmtsort_init_output(sort);
+		s = stmtsort_init(sort);
 		if (s)
 			goto err;
 

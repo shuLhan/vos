@@ -23,5 +23,7 @@ void file_close(struct File **F);
 
 int file_raw_get_size(const char *file, unsigned long *fsize);
 int file_raw_is_exist(const char *file);
+int file_raw_copy(const char *from, const char *to);
+int file_raw_get_dirname(const char *path, char **dirname);
 
 #endif

@@ -176,6 +176,8 @@ int vos_process_create(struct Stmt *create)
 
 	pin = create->in;
 	for (i = 0; i < n_in; i++) {
+		stmt_update_meta(create->prev, pin);
+
 		cproc[i].in		= pin;
 		cproc[i].status		= CPROC_START;
 		cproc[i].buckets	= buckets;

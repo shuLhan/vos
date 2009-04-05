@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "type/vos_TProcCreate.h"
 #include "op/vos_Bucket.h"
+#include "op/vos_Stmt.h"
 
 #define	THREAD_TIME_WAIT	0.1
 

@@ -108,7 +108,7 @@ static int stmt_get_output_from(struct StmtMeta **smeta, struct Stmt *stmt,
 	int		s;
 	struct Stmt	*p	= 0;
 
-	p = stmt_find_by_name(stmt, name);
+	p = stmt_find_by_name(stmt->last, name);
 	if (! p)
 		return E_PARSER_INV_VALUE;
 
@@ -507,13 +507,19 @@ static int parsing_LOAD(struct Stmt **load, struct LL **ptok)
 				s = E_PARSER_UNX_TOKEN;
 				goto err;
 			}
+
+			/* use filename as an alias if alias is not set */
+			if (!(*load)->in->alias) {
+				str_raw_copy((*load)->in->filename,
+						&(*load)->in->alias);
+			}
 			s = PLOAD_DONE;
 			break;
 
 		case PLOAD_AS_NAME:
 			(*load)->in->alias	= (*ptok)->str;
 			(*ptok)->str		= 0;
-			s		= PLOAD_END;
+			s			= PLOAD_END;
 			break;
 		}
 		(*ptok)	= (*ptok)->next;
@@ -629,7 +635,7 @@ static int parsing_SORT(struct Stmt *stmt, struct Stmt **sort,
 	}
 
 	if (s == PSORT_DONE)
-		s = stmtsort_init_output((*sort));
+		s = stmtsort_init((*sort));
 	else
 		s = E_PARSER_INV_STMT;
 err:
@@ -831,6 +837,13 @@ static int parsing_CREATE(struct Stmt *stmt, struct Stmt **create,
 				s = E_PARSER_UNX_TOKEN;
 				goto err;
 			}
+
+			/* use filename as an alias if alias is not set */
+			if (! (*create)->out->alias) {
+				str_raw_copy((*create)->out->filename,
+						&(*create)->out->alias);
+			}
+
 			s = PCREATE_DONE;
 			break;
 
@@ -1070,12 +1083,17 @@ static int parsing_JOIN(struct Stmt *stmt, struct Stmt **join,
 			}
 
 		case PJOIN_END:
-			if ((*ptok)->str[0] == ';') {
-				s = PJOIN_DONE;
-				break;
+			if ((*ptok)->str[0] != ';') {
+				s = E_PARSER_UNK_TOKEN;
+				goto err;
 			}
-			s = E_PARSER_UNK_TOKEN;
-			goto err;
+			/* use filename as an alias if alias is not set */
+			if (! (*join)->out->alias) {
+				str_raw_copy((*join)->out->filename,
+						&(*join)->out->alias);
+			}
+			s = PJOIN_DONE;
+			break;
 
 		case PJOIN_INTO:
 			(*join)->out->filename	= (*ptok)->str;

@@ -16,5 +16,6 @@
 struct Vos _vos;
 
 int get_token_idx(const char **ls, const unsigned int n, const char *tok);
+char *get_tmp_dir(const int lock);
 
 #endif

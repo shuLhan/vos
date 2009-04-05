@@ -128,22 +128,7 @@ static int sort_write(struct ProcSort *psort, struct Record *rows)
 	str_create(&tmp);
 
 	do {
-		/* get a path to temporary directory */
-		if (_vos.proc_max > 1) {
-			do {
-				s = pthread_mutex_trylock(&_vos.proc_tmp_dir_lock);
-			} while (s);
-		}
-
-		str_append(tmp, _vos.p_proc_tmp_dir->str);
-
-		_vos.p_proc_tmp_dir = _vos.p_proc_tmp_dir->next;
-		if (! _vos.p_proc_tmp_dir)
-			_vos.p_proc_tmp_dir = _vos.proc_tmp_dir;
-
-		if (_vos.proc_max > 1) {
-			pthread_mutex_unlock(&_vos.proc_tmp_dir_lock);
-		}
+		str_append(tmp, get_tmp_dir(1));
 
 		/* get random file name */
 		s = str_raw_randomize(VOS_SORT_TMP_FORMAT, &rndm_name);
@@ -218,6 +203,10 @@ static void *sort_process(void *parm)
 			goto err;
 	}
 
+	if (_vos.debug & DBG_SORT) {
+		printf("(%lu) pos start : %ld\n", psort->tid, FCURP(F));
+	}
+
 	/* phase 1: create & fill rows */
 	while (FCURP(F) < psort->pos_end) {
 		s = record_read(&R, F, psort->sort->in->fields);
@@ -228,6 +217,10 @@ static void *sort_process(void *parm)
 		psort->n_row++;
 		if (psort->n_row >= _vos.proc_max_row)
 			break;
+	}
+
+	if (_vos.debug & DBG_SORT) {
+		printf("(%lu) pos end   : %ld\n", psort->tid, FCURP(F));
 	}
 
 	/* check if error, but not end of file */
@@ -359,7 +352,10 @@ int vos_process_sort(struct Stmt *sort)
 
 	/* create thread for sort */
 	for (i = 0; i < _vos.proc_max; i++) {
-		sort_proc[i].pos_start = i * esize;
+		if (i == 0)
+			sort_proc[i].pos_start = i * esize;
+		else
+			sort_proc[i].pos_start = (i * esize) - 1;
 
 		if ((i + 1) == _vos.proc_max)
 			sort_proc[i].pos_end = fsize;

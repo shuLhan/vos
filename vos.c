@@ -34,6 +34,38 @@ int get_token_idx(const char **ls, const unsigned int n, const char *tok)
 	return i;
 }
 
+/**
+ * @desc: get one of the temporary directory from the list of temporary
+ *	directories.
+ *
+ * @return:
+ *	< tmp_dir : a path to random temporary directory.
+ */
+char *get_tmp_dir(const int lock)
+{
+	int	s;
+	char	*tmp_dir = 0;
+
+	if (_vos.proc_max > 1 && lock) {
+		do {
+			s = pthread_mutex_trylock(&_vos.proc_tmp_dir_lock);
+		} while (s);
+	}
+
+	tmp_dir = _vos.p_proc_tmp_dir->str;
+
+	/* to the next temporary dir */
+	_vos.p_proc_tmp_dir = _vos.p_proc_tmp_dir->next;
+	if (! _vos.p_proc_tmp_dir)
+		_vos.p_proc_tmp_dir = _vos.proc_tmp_dir;
+
+	if (_vos.proc_max > 1 && lock) {
+		pthread_mutex_unlock(&_vos.proc_tmp_dir_lock);
+	}
+
+	return tmp_dir;
+}
+
 static int vos_init(int argc, char **argv)
 {
 	int i = 1;

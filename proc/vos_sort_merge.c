@@ -123,6 +123,24 @@ static struct MNode * mnode_get_loser(struct MNode **root,
 	return loser;
 }
 
+static int single_merge(const char *from, const char *to)
+{
+	int	s;
+	char	*from_dir	= 0;
+	char	*to_dir		= 0;
+
+	file_raw_get_dirname(from, &from_dir);
+	file_raw_get_dirname(to, &to_dir);
+
+	if (strcmp(from_dir, to_dir) == 0) {
+		s = rename(from, to);
+	} else {
+		s = file_raw_copy(from, to);
+	}
+
+	return s;
+}
+
 int vos_sort_merge(struct Stmt *sort, struct LL *lsfile,
 			struct Record **_all_rows, unsigned long all_n_row)
 {
@@ -136,9 +154,13 @@ int vos_sort_merge(struct Stmt *sort, struct LL *lsfile,
 	struct Record	*R	= 0;
 	struct Record	*all_rows = (*_all_rows);
 
+	s = stmtsort_init_output(sort);
+	if (s)
+		return s;
+
 	/* in case of only one file to merge */
 	if (! lsfile->next) {
-		s = rename(lsfile->str, sort->out->filename);
+		s = single_merge(lsfile->str, sort->out->filename);
 		return s;
 	}
 
