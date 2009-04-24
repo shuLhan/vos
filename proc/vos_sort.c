@@ -67,16 +67,10 @@ static struct Record * sort(struct Record *rows, unsigned long n_row)
 	/* merge case 3 */
 	rows	= 0;
 	s	= record_cmp(l, r);
-	if (s < 0) {
+	if (s <= 0) {
 		rows		= l;
 		rows->row_last	= rows;
 		l		= l->row_next;
-	} else if (s == 0) {
-		rows		= l;
-		l		= l->row_next;
-		rows->row_next	= r;
-		rows->row_last	= r;
-		r		= r->row_next;
 	} else {
 		rows		= r;
 		rows->row_last	= rows;
@@ -85,16 +79,10 @@ static struct Record * sort(struct Record *rows, unsigned long n_row)
 
 	while (l && r) {
 		s = record_cmp(l, r);
-		if (s < 0) {
+		if (s <= 0) {
 			rows->row_last->row_next	= l;
 			rows->row_last			= l;
 			l				= l->row_next;
-		} else if (s == 0) {
-			rows->row_last->row_next		= l;
-			l					= l->row_next;
-			rows->row_last->row_next->row_next	= r;
-			rows->row_last				= r;
-			r					= r->row_next;
 		} else {
 			rows->row_last->row_next	= r;
 			rows->row_last			= r;
