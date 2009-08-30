@@ -1,6 +1,6 @@
 #include "proc/vos_set.h"
 
-static int set_proc_tmp_dir_value(char *tmp)
+int set_proc_tmp_dir_value(char *tmp)
 {
 	int		idx	= 0;
 	int		s	= 0;

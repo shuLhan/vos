@@ -309,7 +309,7 @@ err:
 	file_close(&F);
 	psort->retval = s;
 
-	return (void *) s;
+	return 0;
 }
 
 int vos_process_sort(struct Stmt *sort)

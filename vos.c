@@ -5,13 +5,6 @@
 #include "proc/vos_create.h"
 #include "proc/vos_join.h"
 
-enum _arg_todo {
-	ARG_DONE	= 0,
-	ARG_START,
-	ARG_DEBUG_VALUE,
-	ARG_VOS_SCRIPT
-};
-
 /**
  * @return:
  *	< 0..(n-1)	: success
@@ -66,56 +59,15 @@ char *get_tmp_dir(const int lock)
 	return tmp_dir;
 }
 
-static int vos_init(int argc, char **argv)
+void sys_getenv_num(unsigned long *env_value, const char *env_name,
+			unsigned long def_value)
 {
-	int i = 1;
-	int s = ARG_START;
+	const char *env = getenv(env_name);
 
-	_vos.debug = 0;
-	while (i <= argc && s != ARG_DONE) {
-		switch (s) {
-		case ARG_START:
-			s = strcmp(argv[i], "-h");
-			if (s == 0)
-				return E_VOS_PARAM;
-
-			s = strcmp(argv[i], "-d");
-			if (s == 0) {
-				s = ARG_DEBUG_VALUE;
-				i++;
-			} else
-				s = ARG_VOS_SCRIPT;
-			break;
-
-		case ARG_DEBUG_VALUE:
-			_vos.debug = strtol(argv[i], 0, 0);
-			s = ARG_VOS_SCRIPT;
-			i++;
-			break;
-
-		case ARG_VOS_SCRIPT:
-			_vos.script = argv[i];
-			s = ARG_DONE;
-			break;
-		}
-	}
-	if (s != ARG_DONE)
-		return E_VOS_PARAM;
-
-	s = ll_add(&_vos.proc_tmp_dir, 1, VOS_DEF_PROC_TMP_DIR);
-	if (s)
-		return s;
-
-	pthread_mutex_init(&_vos.proc_tmp_dir_lock, 0);
-	_vos.p_proc_tmp_dir	= _vos.proc_tmp_dir;
-	_vos.file_buf_size	= VOS_DEF_FILE_BUF_SIZE;
-	_vos.proc_cmp_case	= VOS_DEF_PROC_CMP_CASE;
-	_vos.proc_max		= VOS_DEF_PROC_MAX;
-	_vos.proc_max_row	= VOS_DEF_PROC_MAX_ROW;
-
-	srand(time((void *) 0));
-
-	return 0;
+	if (env)
+		*env_value = strtol(env, 0, 0);
+	else
+		*env_value = def_value;
 }
 
 static void vos_print()
@@ -129,6 +81,60 @@ static void vos_print()
 	printf(" vos process maximum row  : %ld\n", _vos.proc_max_row);
 	printf(" vos process temporary dir:\n");
 	ll_print(_vos.proc_tmp_dir);
+}
+
+/**
+ * @return:
+ *	< 0		: success.
+ *	< E_VOS_PARAM	: fail.
+ */
+static int vos_init(int argc, char **argv)
+{
+	int	s;
+	char	*env;
+
+	if (argc < 2 || argc > 2)
+		return E_VOS_PARAM;
+
+	pthread_mutex_init(&_vos.proc_tmp_dir_lock, 0);
+
+	/* get Vos variable value from system environment */
+	sys_getenv_num((unsigned long *) &_vos.debug, VOS_ENV_DEBUG,
+						VOS_DEF_DEBUG_VALUE);
+
+	sys_getenv_num(&_vos.file_buf_size, VOS_ENV_FILE_BUF_SIZE,
+						VOS_DEF_FILE_BUF_SIZE);
+
+	sys_getenv_num((unsigned long *) &_vos.proc_cmp_case,
+						VOS_ENV_PROC_CMP_CASE,
+						VOS_DEF_PROC_CMP_CASE);
+
+	sys_getenv_num((unsigned long *) &_vos.proc_max, VOS_ENV_PROC_MAX,
+						VOS_DEF_PROC_MAX);
+
+	sys_getenv_num(&_vos.proc_max_row, VOS_ENV_PROC_MAX_ROW,
+						VOS_DEF_PROC_MAX_ROW);
+
+	/* get temporary dir from system environment */
+	env = getenv(VOS_ENV_TMP_DIR);
+	if (env)
+		set_proc_tmp_dir_value(env);
+	else {
+		s = ll_add(&_vos.proc_tmp_dir, 1, VOS_DEF_PROC_TMP_DIR);
+		if (s)
+			return s;
+	}
+
+	_vos.p_proc_tmp_dir = _vos.proc_tmp_dir;
+
+	_vos.script = argv[1];
+
+	srand(time((void *) 0));
+
+	if (_vos.debug)
+		vos_print();
+
+	return 0;
 }
 
 static int vos_process(struct Stmt *stmt)
@@ -175,7 +181,7 @@ int main(int argc, char *argv[])
 	int		s;
 	struct Stmt	*stmt	= 0;
 
-	s = vos_init(argc - 1, argv);
+	s = vos_init(argc, argv);
 	if (s)
 		goto err;
 

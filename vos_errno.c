@@ -2,12 +2,7 @@
 
 const char *vos_errmsg[N_VOS_ERRNO] = {
 	"\0",
-	"Usage: vos [-d {1|2|4|8|16}] <vos script>\n"\
-	"  -d 1  : debug / test script\n"\
-	"  -d 2  : debug script parser\n"\
-	"  -d 4  : debug sort statement\n"\
-	"  -d 8  : debug create statement\n"\
-	"  -d 16 : debug join statement\n\0",
+	"Usage: vos <vos script>\n\0",
 
 	"line %d: unexpected character '%c'.\n\0",
 	"line %d: unexpected token '%s'.\n\0",
