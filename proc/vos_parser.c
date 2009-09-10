@@ -252,7 +252,34 @@ static int parsing_FIELD(struct StmtMeta *mref, struct StmtMeta *mout,
 		case PFIELD_LEFTQ:
 			switch ((*ptok)->str[0]) {
 			case '\'':
-				f->left_q	= (*ptok)->str[1];
+				if ((*ptok)->str[1] == '\\') {
+					switch ((*ptok)->str[2]) {
+					case 't':
+						f->left_q = '\t';
+						break;
+					case 'n':
+						f->left_q = '\n';
+						break;
+					case 'v':
+						f->left_q = '\v';
+						break;
+					case 'r':
+						f->left_q = '\r';
+						break;
+					case 'f':
+						f->left_q = '\f';
+						break;
+					case 'b':
+						f->left_q = '\b';
+						break;
+					default:
+						f->left_q = (*ptok)->str[2];
+						break;
+					}
+				} else {
+					f->left_q = (*ptok)->str[1];
+				}
+
 				s		= PFIELD_SEP;
 				todo_next	= PFIELD_PARENT_NAME;
 				break;
@@ -351,7 +378,34 @@ static int parsing_FIELD(struct StmtMeta *mref, struct StmtMeta *mout,
 		case PFIELD_RIGHTQ:
 			switch ((*ptok)->str[0]) {
 			case '\'':
-				f->right_q	= (*ptok)->str[1];
+				if ((*ptok)->str[1] == '\\') {
+					switch ((*ptok)->str[2]) {
+					case 't':
+						f->right_q = '\t';
+						break;
+					case 'n':
+						f->right_q = '\n';
+						break;
+					case 'v':
+						f->right_q = '\v';
+						break;
+					case 'r':
+						f->right_q = '\r';
+						break;
+					case 'f':
+						f->right_q = '\f';
+						break;
+					case 'b':
+						f->right_q = '\b';
+						break;
+					default:
+						f->right_q = (*ptok)->str[2];
+						break;
+					}
+				} else {
+					f->right_q = (*ptok)->str[1];
+				}
+
 				s		= PFIELD_SEP;
 				todo_next	= PFIELD_STARTP;
 				break;
@@ -385,7 +439,33 @@ static int parsing_FIELD(struct StmtMeta *mref, struct StmtMeta *mout,
 					goto err;
 				}
 			} else if ((*ptok)->str[0] == '\'') {
-				f->sep = (*ptok)->str[1];
+				if ((*ptok)->str[1] == '\\') {
+					switch ((*ptok)->str[2]) {
+					case 't':
+						f->sep = '\t';
+						break;
+					case 'n':
+						f->sep = '\n';
+						break;
+					case 'v':
+						f->sep = '\v';
+						break;
+					case 'r':
+						f->sep = '\r';
+						break;
+					case 'f':
+						f->sep = '\f';
+						break;
+					case 'b':
+						f->sep = '\b';
+						break;
+					default:
+						f->sep = (*ptok)->str[2];
+						break;
+					}
+				} else {
+					f->sep = (*ptok)->str[1];
+				}
 			} else {
 				s		= PFIELD_SEP;
 				todo_next	= PFIELD_TYPE;
@@ -1270,8 +1350,12 @@ int vos_parsing(struct Stmt **stmt, const char *script)
 				goto err;
 
 			F->idx++;
-			if (FCURC(F) == '\\')
+			if (FCURC(F) == '\\') {
+				s = str_append_c(str, FCURC(F));
+				if (s)
+					goto err;
 				F->idx++;
+			}
 
 			s = str_append_c(str, FCURC(F));
 			if (s)
