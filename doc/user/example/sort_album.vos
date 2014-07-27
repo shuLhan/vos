@@ -1,0 +1,9 @@
+#
+# example of sort statement with two field
+#
+LOAD "album.data" (
+        '\'':title     :'\''::,
+            :artist_idx:    :28:28
+) as album;
+
+SORT album BY artist_idx, title INTO "album_sorted.data";

@@ -1,0 +1,39 @@
+ How fast vos_join is and how much memory does it's used
+------------------------------------------------------------------------------
+
+o input file size 1 (already sorted)	: 40,499,908
+o input file size 2 (already sorted)	: 40,499,908
+
+o input rows		: 501,000
+o input fields		: 11
+o output fields		: 22
+
+o process max row	: 100,000
+o process max		: 2
+o file buffer size	: 8192 bytes
+
+
+2009.01.18 - test 000
+------------------------------------------------------------------------------
+
+o allocs			: 24,048,866
+o bytes allocated		: 417,724,740 (~ 5 * inputs file size)
+o running time (w/o memcheck)	:
+
+	real    0m9.118s
+	user    0m8.483s
+	sys     0m0.237s
+
+
+2009.01.18 - test 001
+------------------------------------------------------------------------------
+
+o with new vos_join algorithm
+o allocs			: 542
+o bytes allocated		: 42,134 (~ 0.2 * inputs file size)
+o running time (w/o memcheck)	:
+
+	real    0m5.336s
+	user    0m4.833s
+	sys     0m0.333s
+

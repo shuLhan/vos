@@ -1,0 +1,10 @@
+>>
+- add set variable
+	set process_compare_case_sensitive; (default)
+	set process_compare_case_notsensitive;
+
+	set process_tmp_dir	"/path/to/tmp/dir";
+	set process_tmp_dir	"/another/tmp/dir";
+<< DONE
+
+- Produces maximum, minimum, average, sum, and count fields.

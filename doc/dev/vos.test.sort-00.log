@@ -1,0 +1,65 @@
+	How much vos load+sort use memory
+------------------------------------------------------------------------------
+
+o input file size	: 51,521,908
+o input rows		: 501,000
+o input fields		: 11
+o output fields		: 11
+o sorted fields		: field03
+o process max row	: 100,000
+o process max		: 2
+
+
+2009.01.16 - test 000
+------------------------------------------------------------------------------
+
+o file buffer size		: 8192 (default)
+o allocs			: 24,048,740
+o bytes allocated		: 417,820,691 (~ 8 * input file size)
+o running time (w/o memcheck)	:
+
+	real    0m12.341s
+	user    0m15.849s
+	sys     0m0.627s
+
+
+2009.01.16 - test 001
+------------------------------------------------------------------------------
+
+o file buffer size		: 51,200,000
+o allocs			: 24,048,751
+o bytes allocated		: 1,185,697,974 (~ 23 * input file size)
+o running time (w/o memcheck)	:
+
+	real    0m12.341s
+	user    0m15.849s
+	sys     0m0.627s
+
+
+
+2009.01.16 - test 002
+------------------------------------------------------------------------------
+
+o with new sort_process algorithm
+o file buffer size		: 8192
+o allocs			: 18,624,738
+o bytes allocated		: 332,184,755 (~ 6 * input file size)
+o running time (w/o memcheck)	:
+
+	real    0m10.314s
+	user    0m13.059s
+	sys     0m0.583s
+
+
+2009.01.17 - test 003
+------------------------------------------------------------------------------
+
+o with new sort_process & vos_sort_merge algorithm
+o file buffer size		: 8192
+o allocs			: 6,600,924
+o bytes allocated		: 123,352,391 (~ 2 * input file size)
+o running time (w/o memcheck)	:
+
+	real    0m6.936s
+	user    0m9.379s
+	sys     0m0.560s

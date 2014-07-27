@@ -1,0 +1,9 @@
+#
+# example of sort statement by descending order
+#
+LOAD "artist.data" (
+           :idx :::',',
+        '"':name:'"'::
+) as artist;
+
+SORT artist BY name DESC;

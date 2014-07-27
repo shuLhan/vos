@@ -1,0 +1,206 @@
+				i have a odd habit: checking code every time
+				i get bored, which result an error some time.
+				this file prevent me to over checking it.
+							-- May Benot
+
+--- format ---
++ function_name
+@check		: XXXX XXXX
+@last-check	: year.month.day (last check)
+@auditor	: thisman@thatserver.com (last auditor)
+@desc		: fix algorithm
+--- tamrof ---
+
+
+vos_String
+-----------------------------------------------------------------------------
+
++ str_create
+@check		: X
+@last-check	: 2008.12.17
+@auditor	: ms@kilabit.info
+
++ str_append_c
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
++ str_append
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+@desc		: fix len increment
+
++ str_detach
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
++ str_rtrim
+@check		: XX
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+@desc		: removed
+
++ str_prune
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
++ str_destroy
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
++ str_raw_copy
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
++ str_raw_randomize
+@check		: XX
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+@desc		: 'x' should not be replaced
+
++ str_raw_hash
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
+
+vos_File
+-----------------------------------------------------------------------------
+
++ file_open
+@check		: X
+@last-check	: 2008.12.19
+@auditor	: ms@kilabit.info
+
++ file_read
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_write
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_fetch_until
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_skip_until
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_skip_space
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_destroy
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_raw_get_size
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
++ file_raw_is_exist
+@check		: X
+@last-check	: 2009.01.25
+@auditor	: ms@kilabit.info
+
+
+vos_LL
+-----------------------------------------------------------------------------
+
++ ll_add
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ ll_link
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ ll_print
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ ll_destroy
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
+
+vos_Field
+-----------------------------------------------------------------------------
+
++ field_soft_copy
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ field_add
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ field_print
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ _field_destroy
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
+
+vos_Record
+-----------------------------------------------------------------------------
+
++ record_new
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ _record_cmp
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ record_add_field
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ record_add_row
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ record_prune
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ record_destroy
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+
++ record_print
+@check		: X
+@last-check	: 2009.01.26
+@auditor	: ms@kilabit.info
+

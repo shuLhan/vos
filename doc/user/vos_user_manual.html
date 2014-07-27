@@ -1,0 +1,809 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Vos User Manual</title>
+<style type="text/css">
+@import url(style/page.css);
+</style>
+</head>
+
+<body>
+<h1> Vos User Manual </h1>
+
+<h2> Table of Contents </h2>
+<ul>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#ch00">Building and Compiling Vos</a></li>
+	<ul>
+	<li><a href="#softreq">Software Requirements</a></li>
+	<li><a href="#make">Compiling Vos From Source</a></li>
+	</ul>
+<li><a href="#ch01">Running Vos</a></li>
+	<ul>
+	<li><a href="#vos_env">Vos Environments</a></li>
+	</ul>
+<li><a href="#ch02">Vos Script</a></li>
+	<ul>
+	<li><a href="#vos_var">Vos Variables</a></li>
+	<li><a href="#vos_stmt">Vos Statements</a></li>
+		<ul>
+		<li><a href="#set_stmt">Set Statement</a></li>
+		<li><a href="#sort_stmt">Sort Statement</a></li>
+		<li><a href="#create_stmt">Create Statement</a></li>
+		<li><a href="#join_stmt">Join Statement</a></li>
+		<li><a href="#field_clause">Field Clause</a></li>
+		<li><a href="#filter_clause">Filter Clause</a></li>
+		</ul>
+	</ul>
+<li><a href="#license">Vos License</a></li>
+</ul>
+
+<h2 id="intro"> Introduction </h2>
+Vos is a program to process formatted data, i.e. CSV data.
+Vos is designed to process a large input file, a file where their size is
+larger than the size of memory, and can be tuned to adapt with your machine
+environment.
+<br /><br />
+Vos currently has four main features,
+<ul>
+<li>Sorting</li>
+<p class="list-desc">
+Vos can sort one or more field in input file in one pass.
+</p>
+<li>Reformatting</li>
+<p class="list-desc">
+By declaring only specific fields or using a different separator in vos
+script, Vos can re-create a new file with a new format and data.
+</p>
+<li>Filtering</li>
+<p class="list-desc">
+Vos can omit and include specific data in specific field/record.
+</p>
+<li>Join</li>
+<p class="list-desc">
+Vos can join two file into one file with all or specific fields included in
+output file.
+</p>
+</ul>
+
+<h2 id="ch00">
+Building and Compiling Vos </h2>
+<p class="quote">
+Vos was developed on GNU/Linux system, so any prerequisite below only valid
+on system that running GNU/Linux system. Usually, any Unix like system
+could compile the source, it just does not fully tested yet.
+</p>
+
+<h3 id="softreq" name="softreq">
+Software Requirements </h3>
+
+<p> This software/tools below is used in developing Vos, therefore we
+recommended you to use the same or greater version when building Vos from the
+source.</p>
+<ul>
+<li> GNU C Compiler
+	<ul>
+	<li> Version : 4.2.1_20070724 </li>
+	<li> Website :
+	<a href="http://gcc.gnu.org"> http://gcc.gnu.org </a></li>
+	</ul>
+</li>
+<li> glibc development
+	<ul>
+	<li> Version : 2.6.1 </li>
+	<li> Website :
+<a href="http://www.gnu.org/software/libc/libc.html">
+http://www.gnu.org/software/libc/libc.html </a> </li>
+	</ul>
+</li>
+<li> GNU Make
+	<ul>
+	<li> Version : 3.81 </li>
+	<li> Website :
+<a href="http://www.gnu.org/software/make/make.html">
+http://www.gnu.org/software/make/make.html </a> </li>
+	</ul>
+</li>
+</ul>
+
+
+<h3 id="make" name="make">
+Compiling Vos From Source </h3>
+<p class="quote">
+This step assume that you already get the source and saved into your machine.
+</p>
+
+<pre class="box-script">
+	$ tar jxvf vos-xxxx.xx.xx.tar.bz2
+	$ cd vos/src
+	$ make
+</pre>
+
+<p>
+Where xxxx.xx.xx is Vos version (depend on which version that has been
+downloaded). When running "make", make program will create directory "build"
+in "vos" directory, vos executable is placed in there (vos/build).
+</p>
+<p>
+For later use, you should copy Vos executable to your PATH directory. In
+example:
+</p>
+<pre class="box-script">
+	$ pwd
+	/home/johndoe/tmp/vos/src
+	$ echo $PATH
+	/home/johndoe/bin:/usr/local/bin:/usr/bin:/bin
+	$ cp ../build/vos /home/johndoe/bin
+</pre>
+
+<h2 id="ch01">
+Running Vos </h2>
+<p>
+Vos program only have one parameter: vos script.
+</p>
+<pre class="box-script">
+	vos &lt; vos-script &gt;
+</pre>
+<p>
+<span class="script">vos-script</span> is a file contains <a href="#vos_stmt">
+vos statements </a> that will be executed and processed.
+</p>
+
+<h3 id="vos_env"> Vos Environments </h3>
+<p>
+Before running Vos program, there are severals environment variables that you
+can set to change behaviour of program while running. Some of the environment
+variable also can be set at the vos script using <a href="#vos_var"> Vos
+variables. </a>
+</p>
+
+<ul>
+<li><span class="script"> VOS_DEBUG &lt; number &gt; </span>
+<p class="list-desc">
+Default value : 0
+<br /><br />
+This variable is an optional and used only for debugging, normal use/user
+should not use this parameter. The <span class="script"> VOS_DEBUG </span>
+environment variables can have a value,
+</p>
+<ul>
+<li> 1 : for testing the script only, not process it </li>
+<li> 2 : for debugging parsing process </li>
+<li> 4 : for debugging sort process </li>
+<li> 8 : for debugging create process </li>
+<li> 16 : for debugging join process </li>
+</ul>
+<p class="list-desc">
+Those value can be combined to get more debug output.
+</p>
+<p class="list-desc">
+Example on setting <span class="script"> VOS_DEBUG </span> variable on Bash
+shell,
+</p>
+<pre class="box-script">
+	$ export VOS_DEBUG=3
+</pre>
+<p class="list-desc">
+this value will tell Vos program to debug parsing process (2) but will not
+process the script (1).
+</p>
+</li>
+</br>
+<!-- VOS_DEBUG end -->
+
+<li>
+<span class="script"> VOS_FILE_BUFFER_SIZE &lt; number &gt; </span>
+<p class="list-desc">
+Default value : 8192
+<br /><br />
+This variable is used to set size of buffer for read/write on file, in bytes.
+<br />
+This example set buffer size to ~ 1 MB,
+</p>
+<pre class="box-script">
+	$ export VOS_FILE_BUFFER_SIZE=1000000;
+</pre>
+</li>
+<br />
+<!-- VOS_FILE_BUFFER_SIZE end -->
+
+<li>
+<span class="script"> VOS_COMPARE_CASE &lt; number &gt; </span>
+<p class="list-desc">
+Default value : 0
+<br /><br />
+This variable affect order on sort output.
+<br />
+If <span class="script"> VOS_COMPARE_CASE </span> is set to 0, "B"
+will come first then "a", but
+<br />
+if <span class="script"> VOS_COMPARE_CASE </span> is set to 1, "a"
+will come first then "B".
+<br />
+Example on how to set it on Bash shell,
+</p>
+<pre class="box-script">
+	$ export VOS_COMPARE_CASE=0; # or
+	$ export VOS_COMPARE_CASE=1;
+</pre>
+</li>
+<br />
+<!-- VOS_COMPARE_CASE end -->
+
+<li>
+<span class="script"> VOS_PROCESS_MAX &lt; number &gt; </span>
+<p class="list-desc">
+Default value : 2
+<br /><br />
+This variable affect on how many thread will be used for sort process. The
+recommended value is equal to a number of processor that you have on your
+machine.
+<br />
+Example on how to set it on Bash shell,
+</p>
+<pre class="box-script">
+	$ export VOS_PROCESS_MAX=8;
+</pre>
+</li>
+<br />
+<!-- VOS_PROCESS_MAX end -->
+
+<li>
+<span class="script"> VOS_PROCESS_MAX_ROW &lt; number &gt;</span>
+<br />
+<br />
+<p class="list-desc">
+Default value : 100,000
+<br /><br />
+This variable affect on how many "row" that program must keep in memory before
+writen to temporary file.
+<br />
+Example on how to use it:
+</p>
+<pre class="box-script">
+	$ export VOS_PROCESS_MAX_ROW=400000;
+</pre>
+</li>
+<br />
+<!-- VOS_PROCESS_MAX_ROW -->
+
+<li>
+<span class="script">
+VOS_TMP_DIR
+&lt;double-quote&gt;&lt;string&gt;&lt;double-quote&gt;[:] ... </span>
+<br />
+<br />
+<p class="list-desc">
+Default value : /tmp/
+<br /><br />
+While in sort process, program sometime use temporary file. This temporary
+file usually, as default, placed in "/tmp/" directory. You can add two or more
+directories as temporary directory, as long as there is free space and user
+who run the Vos program has a write access to it.
+<br /><br />
+We recommended that you to use a temporary directory that has a place in a
+different disk than input file, for technical reason it's decrease processing
+time.
+<br /><br />
+</p>
+<pre class="box-script">
+	$ export VOS_TMP_DIR="/var/tmp/";
+</pre>
+<p class="list-desc">
+which result that program will use "/tmp/" (default from program), "/var/tmp/",
+and "/media/tmp/" as temporary directories.
+<br /><br />
+Another example :
+</p>
+<pre class="box-script">
+	$ export VOS_TMP_DIR	"/media/tmp/":"/disk01/";
+</pre>
+<p class="list-desc">
+which result that program will use "/media/tmp/" and "/disk01/" as temporary
+directories.
+</p>
+</li>
+<br />
+
+
+</ul> <!-- Vos Environment -->
+
+<h2 id="ch02"> Vos Script </h2>
+<p>
+To illustrate on how Vos script work, we will use two input files as an example
+here, "artist.data" and "album.data".
+</p>
+
+<span class="script"> artist.data </span>
+<pre class="box-script">
+1,"Broken Social Scene"
+2,"U2"
+3,"Led Zeppelin"
+4,"John Legend"
+5,"Deep Purple"
+</pre>
+
+<span class="script"> album.data </span>
+<pre class="box-script">
+'You Forgot it in People'   1
+'Burn'                      5
+'Get Lifted'                4
+'The Joshua Tree'           2
+'Broken Social Scene'       1
+</pre>
+
+
+<h3 id="vos_var"> Vos Variables </h3>
+<p class="quote">
+Vos variable is used with "SET" statement.
+</p>
+<p>
+Vos variable is used to adapt with the environment where Vos will be running.
+For example, let say that you have a machine with 8 processor and 16 GB of
+memory and you want to sort 20,000,000 rows of data with it's size maybe
+about 2 GB. Instead of using default maximum row (which is 100,000) with two
+thread you can set maximum row to 2,500,000 and maximum thread to 8, which
+will decrease processing time.
+</p>
+<p>
+There are two method to set Vos variable, first, by explicitly defined it on
+vos script by using <span class="script">SET</span> statement; second, by
+defined in environment variable using shell <span class="script">set</span> or
+<span class="script">export</span>.
+</p>
+
+<ul>
+<li><span class="script"> FILE_BUFFER_SIZE &lt;number&gt; </span>
+<br />
+<br />
+<p class="list-desc">
+Default value : 8192
+<br /><br />
+This variable is used to set size of buffer for read/write on file, in bytes.
+<br />
+This example set buffer size to ~ 1 MB,
+</p>
+<pre class="box-script">
+	set FILE_BUFFER_SIZE 1000000;
+</pre>
+</li>
+<br />
+
+<li><span class="script">PROCESS_COMPARE_CASE_SENSITIVE</span> (default) </li>
+<li><span class="script">PROCESS_COMPARE_CASE_NOTSENSITIVE</span>
+<br />
+<br />
+<p class="list-desc">
+This variable affect order on sort output.
+<br />
+If <span class="script"> PROCESS_COMPARE_CASE_SENSITIVE </span> is used, "B"
+will come first then "a", but
+<br />
+if <span class="script"> PROCESS_COMPARE_CASE_NOTSENSITIVE </span> is used "a"
+will come first then "B".
+<br />
+Example on how to use it:
+</p>
+<pre class="box-script">
+	set PROCESS_COMPARE_CASE_SENSITIVE;
+	set PROCESS_COMPARE_CASE_NOTSENSITIVE;
+</pre>
+</li>
+<br />
+
+<li>
+<span class="script"> PROCESS_MAX &lt;number&gt; </span>
+<br />
+<br />
+<p class="list-desc">
+Default value : 2
+<br /><br />
+This variable affect on how many thread will be used for sort process. The
+recommended value is equal to a number of processor that you have on your
+machine.
+<br />
+Example on how to use it:
+</p>
+<pre class="box-script">
+	set PROCESS_MAX 8;
+</pre>
+</li>
+<br />
+
+<li>
+<span class="script"> PROCESS_MAX_ROW &lt;number&gt;</span>
+<br />
+<br />
+<p class="list-desc">
+Default value : 100,000
+<br /><br />
+This variable affect on how many "row" that program must keep in memory before
+writen to temporary file.
+<br />
+Example on how to use it:
+</p>
+<pre class="box-script">
+	set PROCESS_MAX_ROW 400000;
+</pre>
+</li>
+<br />
+
+<li>
+<span class="script">
+PROCESS_TEMPORARY_DIRECTORY
+[:]&lt;double-quote&gt;&lt;string&gt;&lt;double-quote&gt;[:] ... </span>
+<br />
+<br />
+<p class="list-desc">
+Default value : /tmp/
+<br /><br />
+While in sort process, program sometime use temporary file. This temporary
+file usually, as default, placed in "/tmp/" directory. You can add two or more
+directories as temporary directory, as long as there is free space and user
+who run the Vos program has a write access to it.
+<br /><br />
+We recommended you to use a temporary directory that has a place in a
+different disk than input file, for technical reason it's decrease processing
+time.
+<br /><br />
+When <span class="script">':'</span> is set as the first character in a string
+value then the rest of value is added to the list of temporary directory,
+which means the last or the default temporary directory will not be replaced.
+This setting allow you to add several directories in two or more SET
+statement.
+In example :
+</p>
+<pre class="box-script">
+	SET PROCESS_TEMPORARY_DIRECTORY		:"/var/tmp/";
+	SET PROCESS_TEMPORARY_DIRECTORY		:"/media/tmp/";
+</pre>
+<p class="list-desc">
+which result that program will use "/tmp/" (default from program), "/var/tmp/",
+and "/media/tmp/" as temporary directories.
+<br />
+Another example :
+</p>
+<pre class="box-script">
+	SET PROCESS_TEMPORARY_DIRECTORY		:"/var/tmp/";
+	SET PROCES_TEMPORARY_DIRECTORY		"/media/tmp/":"/disk01/";
+</pre>
+<p class="list-desc">
+which result that program will use "/media/tmp/" and "/disk01/" as temporary
+directories but not include "/var/tmp" because it's has been override by the
+last SET statement.
+</p>
+</li>
+<br />
+</ul><!-- end of vos variable list -->
+
+
+<h3 id="vos_stmt"> Vos Statements </h3>
+<p class="quote">
+Vos script is not case sensitive, "Load" is equal with "LOAD".
+</p>
+
+<h4 id="set_stmt"> Set Statement </h4>
+<img class="image" src="image/set_stmt.png" alt="vos set statement"/> <br />
+For example on how to use Set Statement and list of variable see
+<a href="#vos_var">Vos Variable.</a>
+
+<h4 id="load_stmt"> Load Statement </h4>
+<img class="image" src="image/load_stmt.png" alt="vos load statement" /> <br />
+<ul>
+<li><i>/path/to/input/file</i> is path to input file that you want to process.
+</li>
+<li> Input file must be enclosed by a double-quote character. </li>
+<li> For field declaration see <a href="#field_clause"> Field Clause </a></li>
+<li> <i> alias </i> is optional, but we recommended you to use it for easy of use
+later.  </li>
+<li> Declaring Load statement only does not process anything, it just for
+defining your input file and their fields. </li>
+</ul>
+<p>
+Example on using Load Statement:
+</p>
+<pre class="box-script">
+LOAD "artist.data" (
+	   :idx :   ::',',
+	'"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+	'\'':title     :'\''::,
+	    :artist_idx:    :28:28
+) as album;
+</pre>
+
+<h4 id="sort_stmt"> Sort Statement </h4>
+<img class="image" src="image/sort_stmt.png" alt="vos sort statement" />
+<ul>
+<li>Please note that the default setting in sort is <u>case sensitive</u> and in
+	<u>ascending</u> order. To change case sensitive to not-sensitive use
+	<a href="#set_stmt"> SET statement.</a>
+<li>If <span class="script">INTO</span> is not defined then sort output will
+	be written into a file "sort.XXXXXXXX", where "XXXXXXXX" will be
+	replaced by a random characters.
+</ul>
+<p>
+Example on using Sort Statement:
+<br />
+<br />
+This script will sort <span class="script"> artist.data </span> by
+<span class="script"> name </span> (second field) on descending order,
+</p>
+<pre class="box-script">
+LOAD "artist.data" (
+	   :idx :   ::',',
+	'"':name:'"'::
+) as artist;
+
+SORT artist BY name DESC;
+</pre>
+<p> If you run the script the output would be like this, </p>
+<pre class="box-script">
+2|U2
+3|Led Zeppelin
+4|John Legend
+5|Deep Purple
+1|Broken Social Scene
+</pre>
+
+<p>
+This script will sort
+<span class="script"> album.data </span> by
+<span class="script"> artist_idx </span> (second field) then by
+<span class="script"> title </span> (first field) and save the output to a
+file <span class="script"> album_sorted.data </span>.
+</p>
+<pre class="box-script">
+LOAD "album.data" (
+	'\'':title     :'\''::,
+	    :artist_idx:    :28:28
+) as album;
+
+SORT album BY artist_idx, title INTO "album_sorted.data";
+</pre>
+<p> If you run the script the output would be like this, </p>
+<pre class="box-script">
+Broken Social Scene|1
+You Forgot it in People|1
+The Joshua Tree|2
+Get Lifted|4
+Burn|5
+</pre>
+
+<h4 id="create_stmt"> Create Statement </h4>
+<img class="image" src="image/create_stmt.png" alt="vos create statement" />
+<p>
+Create statement is used to create a new data with new format or with
+different field output order. <br />
+Create statement also can be used to combine several input file into one file.
+</p>
+
+<ul>
+<li><i>/path/to/output/file</i> is path to output file where data will be
+written. This value must be enclosed with double quote.</li>
+<li> For field declaration see <a href="#field_clause"> Field Clause </a>.</li>
+<li> For filter declaration see
+<a href="#filter_clause"> Filter Clause </a>.</li>
+</ul>
+
+<p>
+Example on using Create Statement,
+<br />
+<br />
+This script will combine <span class="script"> artist.data </span> and
+<span class="script"> album.data </span> into one file, fields will be
+separated by <span class="script">'|'</span>.
+</p>
+
+<pre class="box-script">
+LOAD "artist.data" (
+	   :idx :   ::',',
+	'"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+	'\'':title:'\''::,
+	    :artist_idx::28:28
+) as album;
+
+CREATE "artist_album.data" from artist, album (
+	   :artist.idx      :   ::'|',
+	'"':artist.name     :'"'::'|',
+	   :album.artist_idx:   ::'|',
+	'[':album.title     :']'::
+);
+</pre>
+
+<p> If you run the script the output would be like this, </p>
+<pre class="box-script">
+1|"Broken Social Scene"|1|[You Forgot it in People]
+2|"U2"|5|[Burn]
+3|"Led Zeppelin"|4|[Get Lifted]
+4|"John Legend"|2|[The Joshua Tree]
+5|"Deep Purple"|1|[Broken Social Scene]
+</pre>
+
+<h4 id="join_stmt"> Join Statement </h4>
+<img class="image" src="image/join_stmt.png" alt="vos joint statement" />
+<img class="image" src="image/join_rules.png" alt="vos join rules" />
+<p>
+Join statement is used to combine two input file into one file, like create
+statement, but using specific fields as a matching rule.
+</p>
+
+<ul>
+<li> if <span class="script"> '+' </span> is defined then the match row and
+	non-match row will be writen to output file. </li>
+<li> if <span class="script"> '-' </span> is defined then the match row will
+	not be writen but non-match row will be writen to output file.</li>
+<li> if non of <span class="script"> '+' </span> and
+	<span class="script"> '-' </span> is defined only the match row will
+	be writen to output file. </li>
+<li> Default input file is in <span class="script">UNSORTED</span>. It's
+	important to defined <span class="script">SORTED</span> if you know
+	that input file is already sorted, so Vos will not sort them again before
+	processing join. </li>
+<li> If <span class="script">INTO</span> is not defined then output file will
+	be writen to a file "join.XXXXXXXX" where "XXXXXXXX" will be replaced
+	by a random characters. </li>
+</ul>
+
+<p>
+Example on using Join statement,
+</p>
+<pre class="box-script">
+LOAD "artist.data" (
+           :idx :   ::',',
+        '"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+        '\'':title     :'\''::,
+            :artist_idx:    :28 :28
+) as album;
+
+JOIN artist, album INTO "join_artist_album.data" (
+        artist.idx = album.artist_idx
+);
+</pre>
+
+<p> If you run the script the output would be like this, </p>
+<pre class="box-script">
+1|Broken Social Scene|You Forgot it in People|1
+2|U2|The Joshua Tree|2
+4|John Legend|Get Lifted|4
+5|Deep Purple|Burn|5
+</pre>
+
+<h4 id="field_clause"> Field Clause </h4>
+<img class="image" src="image/field_clause.png" alt="vos field clause" />
+
+<ul>
+<li> <i> left-quote </i>, <i>right-quote</i> and <i>separator</i> can be any
+	single character. </li>
+<li> <i> left-quote </i>, <i>right-quote</i> and <i>separator</i> must be
+	enclosed by single quote.</li>
+<li> If charater in single quote is it self (single quote) it must be prefixed
+	with backslash, i.e: <span class="script"> '\'' </span>.
+<li> <i>start-position</i> is a number begin from zero.</li>
+<li> <i>end-position</i> is a number begin from 1 and must be greater that
+	<i>start-position</i>. </li>
+<li> <i>field-type</i> is a string indicated type of data in the field. It's
+	value is only two : <span class="script">STRING</span> or
+	<span class="script">NUMBER</span>.</li>
+</ul>
+
+
+<h5>Priority of quote vs position vs separator</h5>
+
+<p>
+First, when reading field data <i>start-position</i> is have a higher priority than
+<i>left-quote</i>. In example, suppose that input data is like this,
+</p>
+
+<pre class="box-script">
+'You Forgot it in People'
+</pre>
+
+<p> and you defined field like this, </p>
+<pre class="box-script">
+	'\'':field00:'\'':4:22:
+</pre>
+
+<p>
+Vos will always read from position 4, not from first character of
+<i>left-quote</i>, which result <span class="script">" Forgot it in Peopl"</span>.
+</p>
+
+<p>
+Second, while reading field data <i>end-position</i> have a higher priority
+than <i>right-quote</i>, and <i>riqht-quote</i> is have a high priority than
+<i>separator</i>.
+</p>
+
+<h4 id="filter_clause"> Filter Clause </h4>
+<img class="image" src="image/filter_clause.png" alt="vos filter clause" />
+<ul>
+<li><span class="script">'='</span> mean is case not-sensitive compare, "a" is
+	equal with "A".</li>
+<li><span class="script">'=='</span> mean is case sensitive compare, "a" is
+	<u>not</u> equal with "A".</li>
+<li>The only limitation here is <i>field-name</i> must be in left and the value in
+	right, not vice versa. </li>
+</ul>
+<p>
+Example of using filter:
+<br />
+<br />
+This script will only write artist and album where it's field
+<span class="script">idx</span> value is 1.
+</p>
+
+<pre class="box-script">
+LOAD "artist.data" (
+	   :idx :::',',
+	'"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+	'\'':title     :'\''::,
+	    :artist_idx:    :28:28
+) as album;
+
+CREATE "filter_artist_album.data" from artist, album (
+	   :artist.idx	:::'|',
+	'"':artist.name	:'"'::'|',
+	'[':album.title	:']'::
+) FILTER (
+        ACCEPT artist.idx = 1,
+        REJECT album.artist_idx != 1
+);
+</pre>
+
+<p> If you run the script the output would be like this, </p>
+<pre class="box-script">
+1|"Broken Social Scene"|[You Forgot it in People]
+|""|[Broken Social Scene]
+</pre>
+
+<h2 id="license" name="license"> Vos License </h2> 
+<pre class="box-script">
+Copyright (C) 2009 M. Shulhan (ms@kilabit.info) All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. All advertising materials mentioning features or use of this software must
+   display the following acknowledgment:
+   "This product includes software written by M. Shulhan (ms@kilabit.info)"
+
+4. The names "M. Shulhan" or "Vos" must not be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+
+5. Products derived from this software may not be called "Vos" nor may "Vos"
+   appear in their names without prior written permission of the author.
+
+THIS SOFTWARE IS PROVIDED BY SHULHAN "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</pre>
+</body>
+</html>

@@ -1,0 +1,16 @@
+#
+# example of join statement
+#
+LOAD "artist.data" (
+            :idx :    ::',',
+        '"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+        '\'':title     :'\''::,
+            :artist_idx:    :28 :28
+) as album;
+
+JOIN artist, album INTO "join_artist_album.data" (
+	artist.idx = album.artist_idx
+);

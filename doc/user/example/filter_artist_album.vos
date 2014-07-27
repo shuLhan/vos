@@ -1,0 +1,21 @@
+#
+# example of using create with filter
+#
+LOAD "artist.data" (
+	   :idx :::',',
+	'"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+        '\'':title     :'\''::,
+            :artist_idx:    :28 :28
+) as album;
+
+CREATE "filter_artist_album.data" from artist, album (
+	   :artist.idx      :::'|',
+	'"':artist.name     :'"'::'|',
+	'[':album.title     :']'::
+) FILTER (
+	ACCEPT artist.idx = 1,
+	REJECT album.artist_idx != 1
+);

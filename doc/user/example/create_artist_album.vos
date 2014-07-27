@@ -1,0 +1,19 @@
+#
+# example of create statement
+#
+LOAD "artist.data" (
+            :idx :    ::',',
+        '"':name:'"'::
+) as artist;
+
+LOAD "album.data" (
+        '\'':title     :'\''::,
+            :artist_idx:    :28:28
+) as album;
+
+CREATE "create_artist_album.data" from artist, album (
+	    :artist.idx      :    ::'|',
+	'"':artist.name     :'"'::'|',
+	    :album.artist_idx:    ::'|',
+	'[' :album.title     :']' ::
+);

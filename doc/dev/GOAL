@@ -1,0 +1,263 @@
+Vos Goals
+----------
+				Taken from CoSort Technical Specifications.
+
+
+Legend:
+- : unimplemented
++ : implemented
+= : on going/half done
+? : is it worth/why/what is that mean
+
+
+Ease of Use
+-----------
+
+- Processes record layouts and SQL­like field definitions from central data
+  dictionaries.
+
+- Converts and processes native COBOL copybook, Oracle SQL*Loader control
+  file, CSV, and W3C extended log format (ELF) file layouts.
+
+- SortCL data definition files are a supported MIMB metadata format.
+
+- Mix of on­line help, pre­runtime application validation, and runtime
+  error messages.
+
+- Leverages centralized application and file layout definitions (metadata
+  repositories).
+
+= Reports problems to standard error when invoked from a program, or
+  to an error log.
+
+- Runs silently or with verbose messaging without user intervention.
+
+- Allows user control over the amount of informational output produced.
+
+- Generates a query­ready XML audit log for data forensics and privacy
+  compliance.
+
+= Describes commands and options through man pages and on­line documentation.
+
+	it's half done because the program is always moving to a new features.
+	it's not wise to mark this as 'done'.
+
+- Easy­to­use interfaces and seamless third­party sort replacements preclude
+  the need for training classes
+
+
+Resource Control
+----------------
+
++ Sets and allows user modification of the maximum and minimum number of
+  concurrent sort threads for sorting on multi­CPU and multi­core systems.
+
+	using PROCESS_MAX variable.
+
++ Uses a specified directory, a combination of directories, for temporary work
+  files.
+
+	using PROC_TMP_DIR variable.
+
++ Limits the amount of main and virtual memory used during sort operations.
+
+	using PROCESS_MAX_ROW variable.
+
+	Since input file size is unpredictable and a human is still need to
+	run the program, the amount of program memory still cannot decide by
+	human. What if it's set to 1 kilobytes ?.
+
++ Sets the size of the memory blocks used as physical I/O buffers.
+
+	using FILE_BUFFER_SIZE variable.
+
+
+Input and Output 
+----------------
+
+= Processes any number of files, of any size, and any number of records,
+  fixed or variable length to 65,535 bytes passed from an input procedure,
+  from stdin, a named pipe, a table in memory, or from an application program.
+
+	- TODO: from stdin
+	- TODO: from a named pipe.
+	- TODO: from a table in memory.
+	- TODO: from an application program.
+
+? Supports the use of environment variables.
+
+	for what ?
+
+= Supports wildcards in the specification of input and output files, as well
+  as absolute path names and aliases.
+
+	- TODO: supports wildcards in the specification of input files.
+
++ Accepts and outputs fixed­ or variable­length records with delimited field.
+
+? Generates one or more output files, and/or summary information, including
+  formatted and dashboard­ready reports.
+
+- Returns sorted, merged, or joined records one (or more) at a time to an output
+  procedure, to stdout (or named pipe), a table in memory, one or more new or
+  existing files, or to a program.
+
+- Outputs optional sequence numbers with each record, at any starting value, for
+  indexed loads and/or reports.
+
+
+Record Selection and Grouping
+-----------------------------
+
+= Includes or omits input or output records using field­to­field or field­constant
+  comparisons.
+
+	TODO: field-to-field comparisons
+
+- Compares on any number of data fields, using standard and alternate collating
+  sequences.
+
++ Sorts and/or reformats groups of selected records.
+
+	using SORT and CREATE statement.
+
++ Matches two or more sorted or unsorted files on inner and outer join criteria using
+  SQL­based condition syntax.
+
+	using JOIN with '+' or '-' statement.
+
+- Skips a specified number of records, bytes, or a file header or footer.
+
+- Processes a specified number of records or bytes, including a saved header.
+
+- Eliminates or saves records with duplicate keys.
+
+
+Sort Key Processing
+-------------------
+
++ Allows any number of key fields to be specified in ascending or
+  descending order.
+
+	using SORT x by x.f1 ASC; or
+	using SORT x by x.f1 DESC;
+
++ Supports any number of fields from 0 to 65,535 bytes in length.
+
+	almost unlimited, the limit is your memory.
+
++ Orders fixed position fields, or floating fields with one or more
+  delimiters.
+
+- Supports numeric keys, including all C, FORTRAN, and COBOL data types.
+
+- Supports single­ and multi­byte character keys, including ASCII, EBCDIC,
+  ASCII in EBCDIC sequence, American, European, ISO and Japanese timestamps,
+  and natural (locale­dependent) values, as well as Unicode and double­byte
+  characters such as Big5, EUC­TW, UTF32, and S­JIS.
+
+- Allows left or right alignment and case shifting of character keys.
+
+- Accepts user compare procedures for multi­byte, encrypted and other
+  special data.
+
+- Performs record sequence checking.
+
++ Maintains input record order (stability) on duplicate keys.
+
+- Controls treatment of null fields when specifying floating
+  (character separated) keys.
+
+- Collates and converts between many of the following data types (formats):
+	---
+
+
+Record Reformatting
+-------------------
+
++ Inserts, removes, resizes, and reorders fields within records; defines new
+  fields.
+
+- Converts data in fields from one format to another either using internal
+  conversion.
+
+- Maps common fields from differently formatted input files to a uniform sort
+  record.
+
+= Joins any fields from several files into an output record, usually based on a
+  condition.
+
+	using JOIN statement. current support only in joining two input files.
+
+- Changes record layouts from one file type to another, including: Line
+  Sequential, Record Sequential, Variable Sequential, Blocked, Microsoft Comma
+  Separated Values (CSV), ACUCOBOL Vision, MF I­SAM, MFVL, Unisys VBF, VSAM
+  (within UniKik MBM), Extended Log Format (W3C), LDIF, and XML.
+
+- Maps processed records to many differently formatted output files, including
+  HTML.
+
+- Writes multiple record formats to the same file for complex report
+  requirements.
+
+- Performs mathematical expressions and functions on field data (including
+  aggregate data) to generate new output fields.
+
+- Calculates the difference in days, hours, minutes and seconds betweeen
+  timestamps.
+
+
+Field Reformatting/Validation
+-----------------------------
+
+- Aligns desired field contents to either the left or right of the target
+  field, where any leading or trailing fill characters from the source are
+  moved to the opposite side of the string.
+
+- Processes values from multi­dimensional, tab­delimited lookup files.
+
+- Creates and processes sub­strings of original field contents, where you can
+  specify a positive or negative offset and a number of bytes to be contained
+  in the sub­string.
+
+- Finds a user­specified text string in a given field, and replaces all
+  occurrences of it with a different user­specified text string in the target
+  field.
+
+- Supports Perl Compatible Regular Expressions (PCRE), including pattern
+  matching.
+
+- Uses C­style “iscompare” functions to validate contents at the field level
+  (for example, to determine if all field characters are printable), which can
+  also be used for record­filtering via selection statements.
+
+- Protects sensitive field data with field­level de­identification and AES­256
+  encryption routines, along with anonymization, pseudonymization, filtering
+  and other column-level data masking and obfuscation techniques.
+
+- Supports custom, user­written field­level transformation libraries, and
+  documents an example of a field­level data cleansing routine from
+  Melissa Data (AddressObject).
+
+
+Record Summarization
+--------------------
+
+- Consolidates records with equal keys into unique records, while totaling,
+  averaging, or counting values in specified fields, including derived
+  (cross­calculated) fields.
+
+- Produces maximum, minimum, average, sum, and count fields.
+
+- Displays running summary value(s) up to a break (accumulating aggregates).
+
+- Nreaks on compound conditions.
+
+- Allows multiple levels of summary fields in the same report.
+
+- Re­maps summary fields into a new format, allowing relational tables.
+
+- Ranks data through a running count with descending numeric values.
+
+- Writes detail and summary records to the same output file for structured
+  reports.

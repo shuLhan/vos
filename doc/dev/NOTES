@@ -1,0 +1,122 @@
+				sometimes i forgot why i write code like this.
+								-- S.T.M.L
+
+- follow linux coding style
+
+- priority of source code (4S) :
+	+ stable
+	+ simple
+	+ small
+	+ secure (this option does not need for this program)
+
+- keep as small as possible:
+	+ remove unneeded space
+	+ remove unneeded variable
+
+- write comment/documentation as clear as possible
+
+- learn to use:
+	+ if (1 == var)
+
+- learn to avoid:
+	+ (i < strlen(str))
+		on loop statement because strlen() need temporary variable.
+		try,
+			l = strlen(str);
+			while (i < l) { ... }
+
+- use function in libc as much as possible; if not, wrap it!
+
+
+
+001 - I/O Relation between Statement
+-----------------------------------------------------------------------------
+LOAD is an input statement.
+
+SORT, CREATE, JOIN is an output statement, but it can be an input.
+i.e:
+
+	1 - load abc ( ... ) as x;
+	2 - sort x by a, b;
+	3 - create ghi ( x.field, ... ) as out_x;
+
+file output created by sort statement in line 2 will be an input by create
+statement in line 3.
+
+
+002 - Why we need '2nd-loser'
+-----------------------------------------------------------------------------
+
+to minimize comparison and insert in merge tree.
+
+
+
+003 - Why we need 'level' on tree node
+-----------------------------------------------------------------------------
+
+list of input file to merge is A, B, C contain sorted data :
+
+	A : 10, 11, 12, 13      (1st file)
+	B : 1, 12, 100, 101     (2nd file)
+	C : 2, 13, 200, 201     (3rd file)
+
+if we use tree insert algorithm:
+
+	if (root < node)
+		insert to left
+	else
+		insert to right
+
+after several step we will get:
+
+B-12
+    \
+    C-13
+    /
+A-12
+
+which result in not-a-stable sort,
+
+	B-1 C-2 A-10 A-11 B-12 A-12 ...
+
+they should be,
+
+	B-1 C-2 A-10 A-11 A-12 B-12 ...
+
+Even if we choose different algorithm in insert:
+
+	if (root <= node)
+		insert to left
+	else
+		insert to right
+
+there is also input data that will violate this, i.e:
+
+	A : 2, 13, 200, 201     (1st file)
+	B : 1, 12, 100, 101     (2nd file)
+	C : 10, 11, 12, 13      (3rd file)
+
+
+004 - recursives call + thread + free on SunOS 5.10
+-----------------------------------------------------------------------------
+
+i did not investigate much, but doing a recursive call + thread + free cause
+SIGSEGV on SunOS 5.10 system, but not in GNU/Linux system. This odd's found
+whee testing on Solaris and by using dbx the SIGSEGV "sometimes" catched in
+str_destroy,
+
+	if (str->buf)
+		free(str->buf); <= dbx catch here
+
+and "sometimes" below that (but not in vos function/stack).
+
+i.e:
+	list_destroy(**ptr)
+	{
+		if (! (*ptr))
+			return;
+		list_destroy((*ptr)->next);
+		free((*ptr));
+	}
+
+and no, it's not about double free.

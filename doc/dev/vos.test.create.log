@@ -1,0 +1,113 @@
+2009.10.12
+
+Comparing vos create process time by setting process max row and buffer size
+==============================================================================
+
+						is it disk or algorithm ?
+
+- file input size : 257,985,910 byte (~ 250 MB)
+- format of input field:
+
+	'\'':field01:'\''::';',
+
+- format of output field:
+
+	'':field01:''::'|',
+
+- number of field in input & output : 11 field
+- process max : 2 (this option does not effect process actually)
+
+
+system copy time
+==============================================================================
+
+	real    0m2.906s
+	user    0m0.010s
+	sys     0m0.747s
+
+
+vos load+create
+==============================================================================
+
+test 000
+--------
+o process max row	: 100,000
+o file buffer size	: 8192
+
+	real    0m30.243s
+	user    0m55.680s
+	sys     0m1.567s
+
+
+test 001
+--------
+o process max row	: 100,000
+o file buffer size	: 1,024,000
+
+	real    0m30.296s
+	user    0m55.536s
+	sys     0m1.790s
+
+
+test 002
+--------
+
+o process max row	: 200,000
+o file buffer size	: 1,024,000
+
+	real    0m30.115s
+	user    0m55.956s
+	sys     0m1.500s
+
+
+test 003
+--------
+
+o process max row	: 100,000
+o file buffer size	: 51,200,000
+
+	real    0m29.924s
+	user    0m55.443s
+	sys     0m1.563s
+
+
+test 004
+--------
+
+o process max row	: 500,000
+o file buffer size	: 51,200,000
+
+	real    0m32.795s
+	user    0m57.013s
+	sys     0m1.697s
+
+
+(source change)
+before:
+- int record_read_filtered(struct Record **R, struct File *F,
+				struct Field *fld);
+after:
+- int record_read_filtered(struct Record **R, struct File *F,
+				struct Field *fld, struct String *str);
+
+
+test 005
+--------
+
+o process max row	: 100,000
+o file buffer size	: 8,192
+
+	real    0m29.783s
+	user    0m54.253s
+	sys     0m1.867s
+
+
+test 006
+--------
+
+o process max row	: 100,000
+o file buffer size	: 51,200,000
+
+	real    0m30.364s
+	user    0m56.000s
+	sys     0m1.570s

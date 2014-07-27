@@ -1,0 +1,50 @@
+
+ How much vos load+create use memory
+------------------------------------------------------------------------------
+
+o input file size	: 51,521,908
+o input rows		: 501,000
+o input fields		: 11
+o output fields		: 11
+o process max row	: 100,000
+o process max		: 2
+
+
+2009.01.14 - test 000
+------------------------------------------------------------------------------
+
+0 file buffer size		: 51,200,000
+o bytes allocated		: 296,833,772
+o allocs			:  11,000,473
+o running time (w/o memcheck)	:
+
+	real    0m6.187s
+	user    0m10.789s
+	sys     0m0.363s
+
+
+2009.01.15 - test 001
+------------------------------------------------------------------------------
+
+o with new vos_process_create algorithm
+0 file buffer size		: 51,200,000
+o bytes allocated		: 166,820,858 (~ 3 * input file size)
+o allocs			: 3,500,662
+o running time (w/o memcheck)	:
+
+	real    0m4.565s
+	user    0m8.026s
+	sys     0m0.327s
+
+
+2009.01.16 - test 002
+------------------------------------------------------------------------------
+o file buffer size		: 8192 (default)
+o bytes allocated		: 64,437,110 (~ 1.2 * input file size :)
+o allocs			: 3,500,652
+o running time (w/o memcheck)	:
+
+	real    0m4.361s
+	user    0m7.763s
+	sys     0m0.283s
+
